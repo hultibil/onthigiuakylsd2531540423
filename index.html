@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Thi Giữa Kỳ - Lịch Sử Đảng Cộng Sản Việt Nam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #da251d;
+            --primary-hover: #b81c15;
+            --gold: #ffcd00;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --correct: #10b981;
+            --correct-bg: #ecfdf5;
+            --wrong: #ef4444;
+            --wrong-bg: #fef2f2;
+            --border: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Lexend', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), #991b1b);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(218, 37, 29, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header-title p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .timer-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 2rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .badge-type {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-coban { background: #e0f2fe; color: #0369a1; }
+        .badge-bay { background: #fef3c7; color: #b45309; }
+        .badge-nangcao { background: #f3e8ff; color: #6b21a8; }
+
+        .bookmark-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-sub);
+            transition: all 0.2s;
+        }
+
+        .bookmark-btn.active {
+            color: #f59e0b;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-item {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            background: var(--card-bg);
+        }
+
+        .option-item:hover:not(.disabled) {
+            border-color: var(--primary);
+            background: #fef2f2;
+        }
+
+        .option-item.selected {
+            border-color: var(--primary);
+            background: #fef2f2;
+        }
+
+        .option-item.correct {
+            border-color: var(--correct);
+            background: var(--correct-bg);
+            color: #065f46;
+        }
+
+        .option-item.wrong {
+            border-color: var(--wrong);
+            background: var(--wrong-bg);
+            color: #991b1b;
+        }
+
+        .option-item.disabled {
+            cursor: default;
+        }
+
+        .opt-prefix {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            flex-shrink: 0;
+        }
+
+        .option-item.correct .opt-prefix {
+            background: var(--correct);
+            color: white;
+        }
+
+        .option-item.wrong .opt-prefix {
+            background: var(--wrong);
+            color: white;
+        }
+
+        .explanation-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 1.5rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .explanation-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .explanation-content {
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Sidebar Navigation Grid */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .grid-questions {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .grid-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .grid-item:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .grid-item.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .grid-item.answered-correct {
+            background: var(--correct-bg);
+            border-color: var(--correct);
+            color: #065f46;
+        }
+
+        .grid-item.answered-wrong {
+            background: var(--wrong-bg);
+            border-color: var(--wrong);
+            color: #991b1b;
+        }
+
+        .grid-item.bookmarked::after {
+            content: '★';
+            position: absolute;
+            top: 1px;
+            right: 3px;
+            font-size: 0.6rem;
+            color: #f59e0b;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats-detail {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+
+        /* Result Modal Screen */
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #991b1b);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem auto;
+            box-shadow: 0 10px 20px rgba(218, 37, 29, 0.3);
+        }
+
+        .score-num {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .score-total {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <span>🇻🇳</span>
+            <div>
+                <h1>Lịch Sử Đảng Cộng Sản Việt Nam</h1>
+                <p>Bộ Đề Ôn Thi Giữa Kỳ - 50 Câu Trắc Nghiệm Trực Quan</p>
+                <p>Created by Kaido Vibe Code</p>
+            </div>
+        </div>
+        <div class="timer-badge" id="timer">
+            ⏱️ <span>00:00</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Main Quiz Section -->
+        <main class="main-card">
+            <div id="quiz-body">
+                <div class="quiz-header">
+                    <div>
+                        <span style="font-weight: 600; color: var(--text-sub);">Câu hỏi <span id="current-q-num">1</span>/50</span>
+                        <span id="badge-type" class="badge-type badge-coban" style="margin-left: 8px;">Cơ bản</span>
+                    </div>
+                    <button class="bookmark-btn" id="bookmark-btn" onclick="toggleBookmark()" title="Đánh dấu câu hỏi này">★</button>
+                </div>
+
+                <div class="question-text" id="question-text">Đang tải câu hỏi...</div>
+
+                <div class="options-list" id="options-container"></div>
+
+                <div class="explanation-box" id="explanation-box">
+                    <div class="explanation-title">💡 Tóm tắt trọng tâm & Giải thích:</div>
+                    <div class="explanation-content" id="explanation-text"></div>
+                </div>
+
+                <div class="quiz-footer">
+                    <button class="btn btn-secondary" id="btn-prev" onclick="navigate(-1)">← Câu trước</button>
+                    <button class="btn btn-primary" id="btn-next" onclick="navigate(1)">Câu tiếp →</button>
+                </div>
+            </div>
+
+            <!-- Result Summary Screen -->
+            <div id="result-screen" class="result-screen">
+                <h2>🎉 Hoàn Thành Bài Thi!</h2>
+                <p style="color: var(--text-sub); margin-top: 4px;">Kết quả tổng hợp bài kiểm tra giữa kỳ của bạn</p>
+                
+                <div class="score-circle">
+                    <div class="score-num" id="final-score">0</div>
+                    <div class="score-total">/ 10 ĐIỂM</div>
+                </div>
+
+                <p id="result-feedback" style="font-weight: 600; margin-bottom: 1.5rem; font-size: 1.1rem;"></p>
+
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="btn btn-primary" onclick="restartQuiz()">🔄 Làm lại từ đầu</button>
+                    <button class="btn btn-secondary" onclick="reviewWrongAnswers()">❌ Xem lại câu làm sai</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Section -->
+        <aside class="sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-title">
+                    <span>Tiến độ làm bài</span>
+                    <span id="progress-percent" style="color: var(--primary);">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="stats-detail">
+                    <span>Đã làm: <b id="answered-count">0</b>/50</span>
+                    <span>Đúng: <b id="correct-count" style="color: var(--correct);">0</b></span>
+                    <span>Sai: <b id="wrong-count" style="color: var(--wrong);">0</b></span>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <div class="sidebar-title">
+                    <span>Danh sách câu hỏi</span>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="finishQuiz()">Nộp bài</button>
+                </div>
+                <div class="grid-questions" id="grid-questions"></div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const questionsData = [
+            // CHƯƠNG 1
+            { id: 1, type: "coban", q: "Sự kiện nào đánh dấu giai cấp công nhân Việt Nam bước đầu chuyển từ đấu tranh tự phát sang đấu tranh tự giác?", options: ["Thành lập Hội Việt Nam Cách mạng Thanh niên (1925)", "Cuộc bãi công của công nhân Ba Son (1925)", "Phong trào 'Vô sản hóa' của Hội VNCMTN (1929)", "Sự ra đời của Đông Dương Cộng sản Đảng (6/1929)"], answer: 1, exp: "Cuộc bãi công của công nhân Ba Son (8/1925) đánh dấu giai cấp công nhân Việt Nam chuyển từ đấu tranh tự phát sang tự giác." },
+            { id: 2, type: "coban", q: "Sự kiện đánh dấu bước ngoặt quan trọng trong cuộc đời hoạt động của Nguyễn Ái Quốc – từ một người yêu nước trở thành chiến sĩ cộng sản đầu tiên là:", options: ["Gửi Bản Yêu sách của nhân dân An Nam (1919)", "Đọc bản Sơ thảo Luận cương của Lê-nin (7/1920)", "Tán thành Quốc tế III và tham gia sáng lập Đảng Cộng sản Pháp (12/1920)", "Chủ trì Hội nghị hợp nhất các tổ chức cộng sản (1930)"], answer: 2, exp: "Tháng 12/1920 tại Đại hội Tours, Bác bỏ phiếu tán thành Quốc tế III và sáng lập Đảng CS Pháp -> Bước ngoặt trở thành chiến sĩ cộng sản đầu tiên." },
+            { id: 3, type: "bay", q: "Đảng Cộng sản Việt Nam ra đời đầu năm 1930 là sản phẩm của sự kết hợp giữa các yếu tố nào?", options: ["Chủ nghĩa Mác – Lênin, phong trào công nhân và phong trào nông dân", "Chủ nghĩa Mác – Lênin, phong trào công nhân và phong trào yêu nước", "Tư tưởng Hồ Chí Minh, phong trào công nhân và phong trào tư sản dân tộc", "Chủ nghĩa Mác – Lênin, phong trào tư sản và phong trào tiểu tư sản"], answer: 1, exp: "ĐCS Việt Nam ra đời là sự kết hợp giữa Chủ nghĩa Mác-Lênin + Phong trào công nhân + Phong trào yêu nước." },
+            { id: 4, type: "coban", q: "Ba tổ chức cộng sản ra đời ở Việt Nam năm 1929 gồm có:", options: ["Đông Dương CSĐ, An Nam CSĐ, Việt Nam Quốc dân Đảng", "Đông Dương CSĐ, An Nam CSĐ, Đông Dương Cộng sản Liên đoàn", "Đông Dương Cộng sản Liên đoàn, Hội VNCMTN, Tân Việt CMĐ", "An Nam CSĐ, Đảng Thanh niên, Đông Dương CSLĐ"], answer: 1, exp: "3 tổ chức cộng sản năm 1929: Đông Dương CSĐ, An Nam CSĐ và Đông Dương CS Liên đoàn." },
+            { id: 5, type: "nangcao", q: "Điểm khác biệt cơ bản về nội dung giữa Chánh cương vắn tắt và Sách lược vắn tắt do Nguyễn Ái Quốc soạn thảo năm 1930 là gì?", options: ["Chánh cương thiên về kinh tế, Sách lược thiên về chính trị", "Chánh cương tập trung đối ngoại, Sách lược tập trung đối nội", "Chánh cương thiên về đường lối chiến lược, Sách lược tập trung vào phương pháp và lực lượng đấu tranh cụ thể", "Chánh cương xác định nhiệm vụ trước mắt, Sách lược xác định mục tiêu lâu dài"], answer: 2, exp: "Chánh cương vắn tắt thiên về đường lối chiến lược; Sách lược vắn tắt tập trung vào phương pháp và lực lượng đấu tranh." },
+            { id: 6, type: "bay", q: "Điểm giống nhau căn bản giữa Cương lĩnh chính trị đầu tiên (2/1930) và Luận cương chính trị (10/1930) là:", options: ["Đều xác định công nhân và nông dân là lực lượng duy nhất của cách mạng", "Đều đánh giá cao khả năng cách mạng của giai cấp tiểu tư sản và tư sản dân tộc", "Đều xác định đường lối chiến lược là tiến hành cách mạng tư sản dân quyền và cách mạng xã hội chủ nghĩa", "Đều đặt nhiệm vụ giải phóng dân tộc lên hàng đầu và cấp bách nhất"], answer: 2, exp: "Cả hai văn kiện đều xác định chiến lược cách mạng: Tiến hành CM tư sản dân quyền và cách mạng XHCN (bỏ qua TBCN)." },
+            { id: 7, type: "coban", q: "Luận cương chính trị tháng 10/1930 do ai khởi thảo?", options: ["Nguyễn Ái Quốc", "Trần Phú", "Lê Hồng Phong", "Trường Chinh"], answer: 1, exp: "Luận cương chính trị tháng 10/1930 do đồng chí Trần Phú khởi thảo." },
+            { id: 8, type: "bay", q: "Nhận định nào phản ánh quan điểm cốt lõi của Luận cương chính trị (10/1930)?", options: ["Độc lập dân tộc gắn liền với Chủ nghĩa xã hội", "Vấn đề thổ địa là cái cốt của cách mạng tư sản dân quyền", "Dân tộc trên hết, Tổ quốc trên hết", "Đánh cho Mỹ cút, đánh cho Ngụy nhào"], answer: 1, exp: "Luận cương 10/1930 khẳng định: 'Vấn đề thổ địa là cái cốt của cách mạng tư sản dân quyền'." },
+            { id: 9, type: "coban", q: "Đỉnh cao của phong trào cách mạng 1930 – 1931 là sự xuất hiện của hình thức chính quyền nào?", options: ["Ủy ban Dân tộc giải phóng", "Xô viết Nghệ - Tĩnh", "Việt Nam Dân chủ Cộng hòa", "Chính phủ lâm thời"], answer: 1, exp: "Đỉnh cao phong trào 1930 - 1931 là sự thành lập chính quyền Xô viết Nghệ - Tĩnh." },
+            { id: 10, type: "coban", q: "Ngày Quốc tế Lao động lần đầu tiên được kỷ niệm công khai và rộng rãi tại Việt Nam vào thời gian nào?", options: ["01/05/1925", "01/05/1930", "01/05/1936", "01/05/1945"], answer: 1, exp: "Ngày 1/5/1930 lần đầu tiên công nhân Việt Nam biểu tình kỷ niệm Ngày Quốc tế Lao động." },
+            { id: 11, type: "coban", q: "Hội nghị Ban Chấp hành Trung ương Đảng tháng 7/1936 tại Thượng Hải do đồng chí nào chủ trì?", options: ["Nguyễn Ái Quốc", "Trần Phú", "Lê Hồng Phong", "Hà Huy Tập"], answer: 2, exp: "HNTƯ tháng 7/1936 tại Thượng Hải do đồng chí Lê Hồng Phong chủ trì." },
+            { id: 12, type: "bay", q: "Nhiệm vụ trực tiếp, trước mắt của cách mạng Đông Dương giai đoạn 1936 – 1939 là:", options: ["Đánh đổ đế quốc Pháp, đòi độc lập dân tộc và tịch thu ruộng đất", "Chống phát xít, chống phản động thuộc địa và tay sai, đòi tự do, dân chủ, cơm áo, hòa bình", "Khởi nghĩa vũ trang giành chính quyền về tay nhân dân", "Đánh đổ phong kiến, thực hiện chia ruộng đất cho dân cày nghèo"], answer: 1, exp: "1936-1939 tập trung chống phát xít, chống phản động thuộc địa; đòi tự do, dân chủ, cơm áo, hòa bình." },
+            { id: 13, type: "nangcao", q: "Văn kiện nào vào tháng 10/1936 đã thẳng thắn phê phán những quan điểm chưa đúng và khắc phục hạn chế của Luận cương 10/1930?", options: ["Đề cương văn hóa Việt Nam", "Chung quanh vấn đề chiến sách mới", "Kháng chiến nhất định thắng lợi", "Chỉ thị Kháng chiến kiến quốc"], answer: 1, exp: "Văn kiện 'Chung quanh vấn đề chiến sách mới' (10/1936) bước đầu khắc phục hạn chế của Luận cương 10/1930." },
+            { id: 14, type: "coban", q: "Sự chuyển hướng chỉ đạo chiến lược giai đoạn 1939 – 1945 bắt đầu từ HNTƯ nào và hoàn chỉnh tại HNTƯ nào?", options: ["Bắt đầu từ HNTƯ 6 (11/1939), hoàn chỉnh tại HNTƯ 8 (5/1941)", "Bắt đầu từ HNTƯ 5 (1938), hoàn chỉnh tại HNTƯ 7 (1940)", "Bắt đầu từ HNTƯ 7 (11/1940), hoàn chỉnh tại HNTƯ 8 (5/1941)", "Bắt đầu từ HNTƯ 8 (5/1941), hoàn chỉnh tại Đại hội II (1951)"], answer: 0, exp: "Chuyển hướng chiến lược đặt giải phóng dân tộc lên hàng đầu: Mở đầu tại HNTƯ 6 (11/1939) và hoàn chỉnh ở HNTƯ 8 (5/1941)." },
+            { id: 15, type: "bay", q: "Điểm khác biệt của HNTƯ 8 (5/1941) so với HNTƯ 6 (11/1939) về giải quyết vấn đề dân tộc là:", options: ["Tạm gác khẩu hiệu cách mạng thổ địa", "Đặt nhiệm vụ giải phóng dân tộc lên hàng đầu", "Giải quyết vấn đề dân tộc trong khuôn khổ từng nước ở Đông Dương", "Thành lập lực lượng vũ trang cách mạng"], answer: 2, exp: "HNTƯ 8 (5/1941) chủ trương giải quyết vấn đề dân tộc trong phạm vi từng nước riêng biệt ở Đông Dương (thành lập Mặt trận Việt Minh ở VN)." },
+            { id: 16, type: "coban", q: "Lá cờ đỏ sao vàng năm cánh lần đầu tiên xuất hiện trong cuộc khởi nghĩa nào?", options: ["Khởi nghĩa Bắc Sơn (9/1940)", "Binh biến Đô Lương (1/1941)", "Khởi nghĩa Nam Kỳ (11/1940)", "Tổng khởi nghĩa Tháng Tám (8/1945)"], answer: 2, exp: "Lá cờ đỏ sao vàng xuất hiện lần đầu tiên trong Khởi nghĩa Nam Kỳ (11/1940)." },
+            { id: 17, type: "nangcao", q: "Để tập hợp giai cấp tư sản và văn nghệ sĩ tham gia mặt trận dân tộc giai đoạn 1939-1945, Đảng thành lập:", options: ["Đảng Dân chủ Việt Nam và Hội Văn hóa cứu quốc", "Mặt trận Việt Minh và Hội Liên Việt", "Hội Nghiên cứu Chủ nghĩa Mác và Nha Bình dân học vụ", "Mặt trận Tự do Đông Dương và Hội Công nhân Cứu quốc"], answer: 0, exp: "Tập hợp giai cấp tư sản -> thành lập Đảng Dân chủ VN; tập hợp văn nghệ sĩ -> thành lập Hội Văn hóa Cứu quốc." },
+            { id: 18, type: "coban", q: "Bản Đề cương văn hóa Việt Nam (1943) xác định xây dựng nền văn hóa mới theo 3 nguyên tắc nào?", options: ["Dân tộc, Hiện đại, Đại chúng", "Dân tộc, Khoa học, Đại chúng", "Nhân dân, Khoa học, Tiến bộ", "Dân tộc, Nhân văn, Tiến bộ"], answer: 1, exp: "3 nguyên tắc của Đề cương Văn hóa 1943: Dân tộc, Khoa học và Đại chúng." },
+            { id: 19, type: "coban", q: "Đội Việt Nam Tuyên truyền Giải phóng quân được thành lập vào ngày tháng năm nào?", options: ["22/12/1943", "22/12/1944", "19/12/1946", "15/05/1945"], answer: 1, exp: "Thành lập ngày 22/12/1944 theo chỉ thị của Hồ Chí Minh." },
+            { id: 20, type: "nangcao", q: "Văn kiện nào được đánh giá là 'cương lĩnh quân sự đầu tiên' của Đảng?", options: ["Chỉ thị thành lập Đội Việt Nam Tuyên truyền Giải phóng quân", "Lời kêu gọi Toàn quốc kháng chiến", "Tác phẩm Kháng chiến nhất định thắng lợi", "Chỉ thị Nhật - Pháp bắn nhau và hành động của chúng ta"], answer: 0, exp: "Chỉ thị thành lập Đội Việt Nam Tuyên truyền Giải phóng quân mang tính chất là cương lĩnh quân sự đầu tiên của Đảng." },
+            { id: 21, type: "bay", q: "Thời cơ ngàn năm có một của Cách mạng Tháng Tám năm 1945 tồn tại trong khoảng thời gian nào?", options: ["Từ khi Nhật hất cẳng Pháp (9/3/1945) đến khi Nhật tuyên bố đầu hàng", "Từ khi Nhật tuyên bố đầu hàng Đồng minh đến trước khi quân Đồng minh vào Đông Dương", "Từ khi quân Đồng minh vào Việt Nam đến khi Bác Hồ đọc Tuyên ngôn Độc lập", "Từ khi Liên Xô đánh tan quân Quan Đông đến khi Vua Bảo Đại thoái vị"], answer: 1, exp: "Thời cơ CMT8 xuất hiện từ khi Nhật tuyên bố đầu hàng Đồng minh đến trước khi quân Đồng minh chính thức vào Đông Dương." },
+            { id: 22, type: "coban", q: "Các tỉnh giành được chính quyền sớm nhất trong Tổng khởi nghĩa Tháng Tám 1945 là:", options: ["Hà Nội, Huế, Sài Gòn, Bắc Giang", "Bắc Giang, Hải Dương, Hà Tĩnh, Quảng Nam", "Hà Nội, Hải Dương, Quảng Nam, Cần Thơ", "Cao Bằng, Thái Nguyên, Hà Tĩnh, Sài Gòn"], answer: 1, exp: "4 tỉnh giành chính quyền sớm nhất cả nước: Bắc Giang, Hải Dương, Hà Tĩnh, Quảng Nam." },
+            { id: 23, type: "coban", q: "Sự kiện nào đánh dấu sự sụp đổ hoàn toàn của chế độ phong kiến Việt Nam?", options: ["Bác Hồ đọc Tuyên ngôn Độc lập (2/9/1945)", "Đại hội Quốc dân Tân Trào thông qua 10 chính sách", "Vua Bảo Đại tuyên bố thoái vị và trao ấn kiếm (30/8/1945)", "Chiến dịch Tây Nguyên thắng lợi"], answer: 2, exp: "Ngày 30/8/1945, Vua Bảo Đại tuyên bố thoái vị tại Huế -> Chế độ phong kiến sụp đổ hoàn toàn." },
+            { id: 24, type: "nangcao", q: "Bài học kinh nghiệm quan trọng nhất trong công tác xây dựng lực lượng cách mạng 1930-1945 là:", options: ["Xây dựng khối liên minh công nông vững chắc", "Xây dựng Mặt trận đoàn kết toàn dân và phát huy sức mạnh quần chúng", "Triệt để tranh thủ sự giúp đỡ của Quốc tế Cộng sản", "Tập trung phát triển lực lượng vũ trang làm yếu tố quyết định"], answer: 1, exp: "Bài học quan trọng nhất về xây dựng lực lượng giai đoạn 1930-1945 là xây dựng Mặt trận đoàn kết toàn dân." },
+
+            // CHƯƠNG 2
+            { id: 25, type: "coban", q: "Ngay sau Cách mạng Tháng Tám 1945, tình hình nước ta được nhận diện qua hình ảnh nào?", options: ["Khó khăn tạm thời nhưng căn bản thuận lợi", "Thúng gạo treo trên đầu gậy", "Ngàn cân treo sợi tóc", "Khủng hoảng kinh tế nghiêm trọng"], answer: 2, exp: "Tình thế đất nước sau 1945 vô cùng hiểm nghèo, được ví như 'Ngàn cân treo sợi tóc'." },
+            { id: 26, type: "bay", q: "Trong Chỉ thị Kháng chiến kiến quốc (25/11/1945), Đảng xác định kẻ thù chính của nhân dân ta là:", options: ["Đế quốc Mỹ", "Tưởng Giới Thạch và bè lũ tay sai", "Thực dân Pháp xâm lược", "Phát xít Nhật còn sót lại"], answer: 2, exp: "Chỉ thị Kháng chiến kiến quốc xác định kẻ thù chính, nguy hiểm nhất là Thực dân Pháp xâm lược." },
+            { id: 27, type: "coban", q: "Để giải quyết 'giặc dốt' ngay sau năm 1945, Chính phủ lâm thời đã thành lập cơ quan chuyên trách nào?", options: ["Bộ Giáo dục và Đào tạo", "Nha Bình dân học vụ", "Hội Truyền bá chữ Quốc ngữ", "Nha Văn hóa - Giáo dục"], answer: 1, exp: "Cơ quan chuyên trách diệt giặc dốt: Nha Bình dân học vụ." },
+            { id: 28, type: "bay", q: "Để tránh mũi nhọn tấn công của kẻ thù, ngày 11/11/1945 Đảng Cộng sản Đông Dương đã tuyên bố:", options: ["Giải tán hoàn toàn và ngừng hoạt động", "Đổi tên thành Đảng Lao động Việt Nam", "Tự giải tán, thực chất rút vào hoạt động bí mật, để lại 'Hội Nghiên cứu Chủ nghĩa Mác'", "Sáp nhập vào Mặt trận Việt Minh"], answer: 2, exp: "Ngày 11/11/1945 Đảng tuyên bố tự giải tán nhưng thực chất rút vào hoạt động bí mật dưới danh nghĩa 'Hội Nghiên cứu Chủ nghĩa Mác'." },
+            { id: 29, type: "nangcao", q: "Quyết định chọn giải pháp 'Hòa để tiến' (ký Hiệp định Sơ bộ 6/3/1946 với Pháp) của Trung ương Đảng nhằm mục đích:", options: ["Đuổi quân Tưởng Giới Thạch về nước và tranh thủ thời gian hòa bình chuẩn bị kháng chiến lâu dài", "Công nhận Việt Nam là một quốc gia độc lập hoàn toàn", "Tạo điều kiện cho quân Pháp vào miền Bắc thay thế Tưởng vĩnh viễn", "Nhờ Pháp công nhận nền độc lập của 3 nước Đông Dương"], answer: 0, exp: "Hòa Pháp để nhanh chóng đẩy 20 vạn quân Tưởng về nước, tránh một lúc phải đối đầu với nhiều kẻ thù." },
+            { id: 30, type: "coban", q: "Ba văn kiện nào hợp thành Đường lối kháng chiến chống thực dân Pháp của Đảng?", options: ["Lời kêu gọi Toàn quốc kháng chiến, Chỉ thị Toàn dân kháng chiến, Tác phẩm Kháng chiến nhất định thắng lợi", "Chánh cương vắn tắt, Luận cương chính trị, Đề cương văn hóa", "Chỉ thị Kháng chiến kiến quốc, Tuyên ngôn Độc lập, Hiệp định Sơ bộ", "Lời kêu gọi, Nghị quyết Đại hội II, Cương lĩnh ruộng đất"], answer: 0, exp: "Đường lối kháng chiến chống Pháp thể hiện tập trung ở 3 văn kiện kinh điển nêu trên." },
+            { id: 31, type: "coban", q: "Nội dung cốt lõi của đường lối kháng chiến chống Pháp là:", options: ["Đánh nhanh thắng nhanh, toàn dân hưởng ứng", "Toàn dân, toàn diện, trường kỳ, tự lực cánh sinh và tranh thủ sự ủng hộ quốc tế", "Vừa chống giặc đói, vừa chống giặc dốt, vừa chống giặc ngoại xâm", "Lấy đấu tranh ngoại giao làm khâu quyết định"], answer: 1, exp: "Phương châm kháng chiến chống Pháp: Toàn dân, toàn diện, trường kỳ, tự lực cánh sinh là chính." },
+            { id: 32, type: "nangcao", q: "Ý nghĩa chiến lược lớn nhất của chiến dịch Việt Bắc Thu - Đông 1947 là:", options: ["Mở rộng căn cứ địa cách mạng ra toàn miền Bắc", "Buộc thực dân Pháp phải chuyển từ 'đánh nhanh thắng nhanh' sang 'đánh lâu dài'", "Khai thông biên giới Việt - Trung để nhận viện trợ", "Giành lại quyền chủ động chiến lược trên chiến trường chính"], answer: 1, exp: "Chiến thắng Việt Bắc 1947 đã đập tan chiến lược 'đánh nhanh thắng nhanh', buộc Pháp phải chuyển sang 'đánh lâu dài'." },
+            { id: 33, type: "coban", q: "Chiến dịch quân sự đầu tiên mà ta chủ động tiến công quân Pháp trong kháng chiến chống Pháp là:", options: ["Chiến dịch Việt Bắc (1947)", "Chiến dịch Biên giới Thu - Đông (1950)", "Chiến dịch Tây Bắc (1952)", "Chiến dịch Điện Biên Phủ (1954)"], answer: 1, exp: "Chiến dịch Biên giới 1950 là chiến dịch tiến công lớn đầu tiên do quân ta chủ động mở." },
+            { id: 34, type: "bay", q: "Đại hội đại biểu toàn quốc lần thứ II của Đảng (2/1951) đã quyết định đưa Đảng ra hoạt động công khai với tên gọi mới là:", options: ["Đảng Cộng sản Đông Dương", "Đảng Lao động Việt Nam", "Đảng Cộng sản Việt Nam", "Hội Nghiên cứu Chủ nghĩa Mác"], answer: 1, exp: "Đại hội II (2/1951) quyết định đổi tên Đảng thành Đảng Lao động Việt Nam." },
+            { id: 35, type: "coban", q: "Phương châm tác chiến trong Chiến dịch Điện Biên Phủ (1954) được chuyển từ 'Đánh nhanh, thắng nhanh' sang:", options: ["Chắc thắng mới đánh", "Đánh chắc, tiến chắc", "Đánh bóc vỏ, vây lấn tấn diệt", "Thần tốc, táo bạo"], answer: 1, exp: "Đồng chí Võ Nguyên Giáp quyết định thay đổi phương châm sang 'Đánh chắc, tiến chắc' (chắc thắng)." },
+            { id: 36, type: "nangcao", q: "Văn kiện ngoại giao nào lần đầu tiên ghi nhận đầy đủ các quyền dân tộc cơ bản của nhân dân Việt Nam?", options: ["Hiệp định Sơ bộ (1946)", "Tạm ước (1946)", "Hiệp định Giơ-ne-vơ (1954)", "Hiệp định Pa-ri (1973)"], answer: 2, exp: "Hiệp định Giơ-ne-vơ 1954 lần đầu tiên các nước lớn cam kết tôn trọng các quyền dân tộc cơ bản của VN (Độc lập, chủ quyền, thống nhất, toàn vẹn lãnh thổ)." },
+            { id: 37, type: "coban", q: "Đặc điểm lớn nhất, nổi bật nhất của cách mạng Việt Nam giai đoạn 1954 – 1975 là gì?", options: ["Đất nước bị chia cắt làm hai miền", "Tiến hành đồng thời hai chiến lược cách mạng: CMXHCN ở miền Bắc và CM Dân tộc dân chủ nhân dân ở miền Nam", "Toàn dân tập trung cho công nghiệp hóa", "Đấu tranh hòa bình đòi thi hành Hiệp định Giơ-ne-vơ"], answer: 1, exp: "Đặc điểm độc đáo nổi bật nhất: Một Đảng lãnh đạo đồng thời 2 chiến lược cách mạng ở hai miền." },
+            { id: 38, type: "nangcao", q: "Trong giai đoạn 1954 – 1975, vị trí, vai trò của cách mạng mỗi miền được Đảng xác định như thế nào?", options: ["Miền Bắc quyết định trực tiếp; Miền Nam quyết định nhất", "Miền Bắc giữ vai trò quyết định nhất; Miền Nam giữ vai trò quyết định trực tiếp đối với sự nghiệp giải phóng miền Nam", "Hai miền có vai trò ngang nhau", "Miền Nam quyết định toàn bộ sự nghiệp XHCN"], answer: 1, exp: "Miền Bắc = Hậu phương lớn (quyết định nhất); Miền Nam = Tiền tuyến lớn (quyết định trực tiếp)." },
+            { id: 39, type: "bay", q: "Hội nghị Trung ương 15 (1/1959) có ý nghĩa bước ngoặt đối với cách mạng miền Nam vì đã:", options: ["Phát động cuộc Tổng tiến công Mậu Thân", "Quyết định sử dụng bạo lực cách mạng (khởi nghĩa vũ trang) để tự giải phóng", "Quyết định mở mặt trận ngoại giao tại Paris", "Thành lập Quân giải phóng miền Nam"], answer: 1, exp: "HNTƯ 15 (1959) cho phép dùng bạo lực cách mạng, kết hợp đấu tranh chính trị và vũ trang -> Dẫn tới phong trào Đồng Khởi." },
+            { id: 40, type: "coban", q: "Đại hội đại biểu toàn quốc lần thứ III của Đảng (9/1960) được Bác Hồ đánh giá là:", options: ["Đại hội kháng chiến kiến quốc", "Đại hội xây dựng Chủ nghĩa xã hội ở miền Bắc và đấu tranh thực hiện thống nhất nước nhà", "Đại hội đổi mới và vươn lên", "Đại hội đại thắng lợi"], answer: 1, exp: "Đại hội III được Bác Hồ gọi là Đại hội xây dựng CNXH ở miền Bắc và đấu tranh thống nhất nước nhà." },
+            { id: 41, type: "coban", q: "Chống chiến lược 'Chiến tranh đặc biệt', Đảng chủ trương tiến công địch trên cả 3 vùng chiến lược nào?", options: ["Đồng bằng, đô thị, miền núi", "Rừng núi, nông thôn đồng bằng và đô thị", "Miền Bắc, miền Nam, miền Trung", "Tỉnh, huyện, xã"], answer: 1, exp: "3 vùng chiến lược: Rừng núi, nông thôn đồng bằng và đô thị." },
+            { id: 42, type: "nangcao", q: "Hội nghị Trung ương 13 (1967) đã đánh dấu bước phát triển mới khi quyết định:", options: ["Mở rộng căn cứ địa Tây Bắc", "Chủ động mở mặt trận ngoại giao, kết hợp quân sự - chính trị - ngoại giao", "Giải thể Trung ương Cục", "Đẩy mạnh đấu tranh nghị trường tại Mỹ"], answer: 1, exp: "HNTƯ 13 (1967) đánh dấu bước tiến mới: Quyết định mở mặt trận Ngoại giao." },
+            { id: 43, type: "nangcao", q: "Thắng lợi của cuộc Tổng tiến công và nổi dậy Mậu Thân 1968 có ý nghĩa chiến lược là:", options: ["Tuyên bố giải phóng hoàn toàn miền Nam", "Đánh bại hoàn toàn chiến lược 'Việt Nam hóa chiến tranh'", "Buộc Mỹ phải chấp nhận ngồi vào bàn đàm phán tại Paris", "Làm sụp đổ chính quyền Nguyễn Văn Thiệu"], answer: 2, exp: "Mậu Thân 1968 làm lung lay ý chí xâm lược của Mỹ, buộc Mỹ chấm dứt phá hoại miền Bắc và ngồi vào bàn đàm phán Paris." },
+            { id: 44, type: "coban", q: "Chiến thắng quân sự nào được ví như trận 'Điện Biên Phủ trên không', buộc Mỹ phải ký Hiệp định Paris (1/1973)?", options: ["Chiến thắng Đường 9 - Nam Lào", "Trận đập tan cuộc tập kích B52 vào Hà Nội, Hải Phòng (12/1972)", "Chiến dịch Quảng Trị (1972)", "Chiến dịch Núi Thành"], answer: 1, exp: "Thắng lợi 12 ngày đêm 'Điện Biên Phủ trên không' cuối năm 1972 buộc Mỹ ký Hiệp định Paris." },
+            { id: 45, type: "bay", q: "So với Nghị quyết TƯ 15 (1959), điểm mới nổi bật của Nghị quyết Trung ương 21 (7/1973) là gì?", options: ["Khẳng định con đường bạo lực cách mạng", "Chỉ đạo tiến công địch trên cả 3 mặt trận: Quân sự, chính trị và ngoại giao", "Đặt nhiệm vụ đấu tranh hòa bình lên hàng đầu", "Tập trung xây dựng miền Bắc"], answer: 1, exp: "Nghị quyết TƯ 21 (1973) bổ sung chiến lược tiến công trên cả 3 mặt trận: Quân sự, Chính trị, Ngoại giao." },
+            { id: 46, type: "nangcao", q: "Khẩu hiệu chiến lược phản ánh tư tưởng chỉ đạo xuyên suốt của Đảng trong cuộc chống Mỹ cứu nước là:", options: ["Tất cả cho tiền tuyến", "Đánh cho Mỹ cút, đánh cho Ngụy nhào", "Không có gì quý hơn độc lập, tự do", "Nhằm thẳng quân thù mà bắn"], answer: 1, exp: "Khẩu hiệu 'Đánh cho Mỹ cút, đánh cho Ngụy nhào' thể hiện lộ trình chiến lược giải phóng miền Nam." },
+            { id: 47, type: "coban", q: "Quyết tâm chiến lược giải phóng miền Nam năm 1975 dựa trên phương châm tác chiến nào?", options: ["Đánh chắc, tiến chắc", "Thần tốc, táo bạo, bất ngờ, chắc thắng", "Vây lấn, tiến công", "Đánh nhanh, thắng nhanh"], answer: 1, exp: "Phương châm nổi tiếng trong Đại thắng Mùa Xuân 1975: 'Thần tốc, táo bạo, bất ngờ, chắc thắng'." },
+            { id: 48, type: "coban", q: "Ba chiến dịch lớn dẫn đến thắng lợi trọn vẹn của Tổng tiến công Xuân 1975 là:", options: ["Tây Nguyên, Huế - Đà Nẵng, Hồ Chí Minh", "Đường 9, Tây Nguyên, Sài Gòn", "Phước Long, Đà Nẵng, Hồ Chí Minh", "Tây Bắc, Quảng Trị, Hồ Chí Minh"], answer: 0, exp: "3 chiến dịch đòn bẩy: Tây Nguyên -> Huế - Đà Nẵng -> Chiến dịch Hồ Chí Minh." },
+            { id: 49, type: "nangcao", q: "Điểm nổi bật thể hiện sự sáng tạo trong nghệ thuật chỉ đạo quân sự của Đảng 1954-1975 là:", options: ["Sử dụng đơn độc lực lượng vũ trang", "Nghệ thuật nắm bắt thời cơ và kết hợp chặt chẽ các lực lượng chính trị, quân sự, ngoại giao", "Dựa hoàn toàn vào sự giúp đỡ quốc tế", "Đẩy mạnh chiến tranh tâm lý trên đất Mỹ"], answer: 1, exp: "Nghệ thuật nắm bắt thời cơ, phối hợp nhịp nhàng 3 mặt trận quân sự, chính trị, ngoại giao." },
+            { id: 50, type: "nangcao", q: "Nhân tố mang tính quyết định trực tiếp đến mọi thắng lợi của cách mạng Việt Nam giai đoạn 1945-1975 là:", options: ["Sự ủng hộ của bạn bè quốc tế", "Tinh thần đoàn kết và sự lãnh đạo đúng đắn, sáng suốt của Đảng Cộng sản Việt Nam", "Địa hình hiểm trở của các căn cứ địa", "Trang bị vũ khí hiện đại của quân đội"], answer: 1, exp: "Sự lãnh đạo đúng đắn, tài tình của Đảng Cộng sản Việt Nam là nhân tố quyết định hàng đầu mọi thắng lợi." }
+        ];
+
+        let currentIdx = 0;
+        let userAnswers = new Array(questionsData.length).fill(null);
+        let bookmarked = new Set();
+        let timerSeconds = 0;
+        let timerInterval = null;
+
+        // DOM elements
+        const qNumEl = document.getElementById('current-q-num');
+        const badgeEl = document.getElementById('badge-type');
+        const qTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const expBox = document.getElementById('explanation-box');
+        const expText = document.getElementById('explanation-text');
+        const bookmarkBtn = document.getElementById('bookmark-btn');
+        const gridQuestions = document.getElementById('grid-questions');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+
+        function initQuiz() {
+            renderGrid();
+            loadQuestion(0);
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+                const secs = String(timerSeconds % 60).padStart(2, '0');
+                document.getElementById('timer').querySelector('span').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function renderGrid() {
+            gridQuestions.innerHTML = '';
+            questionsData.forEach((q, index) => {
+                const btn = document.createElement('div');
+                btn.className = `grid-item ${index === currentIdx ? 'active' : ''}`;
+                btn.innerText = index + 1;
+
+                if (userAnswers[index] !== null) {
+                    if (userAnswers[index] === q.answer) {
+                        btn.classList.add('answered-correct');
+                    } else {
+                        btn.classList.add('answered-wrong');
+                    }
+                }
+
+                if (bookmarked.has(index)) {
+                    btn.classList.add('bookmarked');
+                }
+
+                btn.onclick = () => loadQuestion(index);
+                gridQuestions.appendChild(btn);
+            });
+            updateStats();
+        }
+
+        function loadQuestion(index) {
+            currentIdx = index;
+            const q = questionsData[index];
+
+            qNumEl.innerText = index + 1;
+            qTextEl.innerText = q.q;
+
+            // Set badge
+            badgeEl.className = 'badge-type';
+            if (q.type === 'coban') {
+                badgeEl.innerText = 'Cơ bản';
+                badgeEl.classList.add('badge-coban');
+            } else if (q.type === 'bay') {
+                badgeEl.innerText = 'Câu Bẫy';
+                badgeEl.classList.add('badge-bay');
+            } else {
+                badgeEl.innerText = 'Nâng cao';
+                badgeEl.classList.add('badge-nangcao');
+            }
+
+            // Bookmark button state
+            bookmarkBtn.classList.toggle('active', bookmarked.has(index));
+
+            // Options
+            optionsContainer.innerHTML = '';
+            const prefixes = ['A', 'B', 'C', 'D'];
+            const isAnswered = userAnswers[index] !== null;
+
+            q.options.forEach((optText, optIdx) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option-item';
+
+                if (isAnswered) {
+                    optDiv.classList.add('disabled');
+                    if (optIdx === q.answer) {
+                        optDiv.classList.add('correct');
+                    } else if (optIdx === userAnswers[index]) {
+                        optDiv.classList.add('wrong');
+                    }
+                }
+
+                optDiv.innerHTML = `
+                    <div class="opt-prefix">${prefixes[optIdx]}</div>
+                    <div>${optText}</div>
+                `;
+
+                if (!isAnswered) {
+                    optDiv.onclick = () => selectAnswer(optIdx);
+                }
+
+                optionsContainer.appendChild(optDiv);
+            });
+
+            // Explanation box
+            if (isAnswered) {
+                expBox.style.display = 'block';
+                expText.innerText = q.exp;
+            } else {
+                expBox.style.display = 'none';
+            }
+
+            // Controls
+            btnPrev.disabled = index === 0;
+            if (index === questionsData.length - 1) {
+                btnNext.innerText = 'Hoàn thành 🎉';
+            } else {
+                btnNext.innerText = 'Câu tiếp →';
+            }
+
+            renderGrid();
+        }
+
+        function selectAnswer(optIdx) {
+            userAnswers[currentIdx] = optIdx;
+            loadQuestion(currentIdx);
+        }
+
+        function navigate(step) {
+            const newIdx = currentIdx + step;
+            if (newIdx >= 0 && newIdx < questionsData.length) {
+                loadQuestion(newIdx);
+            } else if (newIdx === questionsData.length) {
+                finishQuiz();
+            }
+        }
+
+        function toggleBookmark() {
+            if (bookmarked.has(currentIdx)) {
+                bookmarked.delete(currentIdx);
+            } else {
+                bookmarked.add(currentIdx);
+            }
+            bookmarkBtn.classList.toggle('active', bookmarked.has(currentIdx));
+            renderGrid();
+        }
+
+        function updateStats() {
+            let answered = 0;
+            let correct = 0;
+            let wrong = 0;
+
+            userAnswers.forEach((ans, idx) => {
+                if (ans !== null) {
+                    answered++;
+                    if (ans === questionsData[idx].answer) correct++;
+                    else wrong++;
+                }
+            });
+
+            document.getElementById('answered-count').innerText = answered;
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = wrong;
+
+            const percent = Math.round((answered / questionsData.length) * 100);
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-percent').innerText = `${percent}%`;
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            userAnswers.forEach((ans, idx) => {
+                if (ans === questionsData[idx].answer) correctCount++;
+            });
+
+            const score = ((correctCount / questionsData.length) * 10).toFixed(1);
+
+            document.getElementById('quiz-body').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('final-score').innerText = score;
+
+            const feedback = document.getElementById('result-feedback');
+            if (score >= 8.5) {
+                feedback.innerText = "🌟 Xuất sắc! Bạn đã nắm rất vững kiến thức Lịch sử Đảng!";
+                feedback.style.color = "var(--correct)";
+            } else if (score >= 6.5) {
+                feedback.innerText = "👍 Khá tốt! Hãy ôn lại các câu bẫy/nâng cao để đạt điểm tối đa nhé!";
+                feedback.style.color = "#d97706";
+            } else {
+                feedback.innerText = "📚 Cần cố gắng hơn! Hãy xem lại giải thích và làm lại bài thi.";
+                feedback.style.color = "var(--wrong)";
+            }
+        }
+
+        function restartQuiz() {
+            userAnswers = new Array(questionsData.length).fill(null);
+            bookmarked.clear();
+            timerSeconds = 0;
+            document.getElementById('quiz-body').style.display = 'block';
+            document.getElementById('result-screen').style.display = 'none';
+            initQuiz();
+        }
+
+        function reviewWrongAnswers() {
+            document.getElementById('quiz-body').style.display = 'block';
+            document.getElementById('result-screen').style.display = 'none';
+            const firstWrong = userAnswers.findIndex((ans, idx) => ans !== null && ans !== questionsData[idx].answer);
+            if (firstWrong !== -1) {
+                loadQuestion(firstWrong);
+            } else {
+                loadQuestion(0);
+            }
+        }
+
+        // Initialize App
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
